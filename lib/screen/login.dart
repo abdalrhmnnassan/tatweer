@@ -1,9 +1,12 @@
-import 'dart:async';
+
+
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
-import 'file:///C:/AndroidStudio/fluttre_project/tatweer/lib/screen/store_info.dart';
+
+import 'store_info.dart';
 class Login extends StatefulWidget {
   @override
   _LoginState createState() => _LoginState();
@@ -24,10 +27,13 @@ class _LoginState extends State<Login> {
   String Token_type_= null;/////////       this parameter String to store TokenType after convert first char into toUpperCase and To combine it with the rest of String
   var dateTime = DateFormat('+h');//       this parameter to set DateFormat into +h
   var dateGMT = null;//////////////        this parameter to store dateGMT
+  var data1;
+  var data;
+  bool loading = false;
   void _toggleVisibility(){
     setState(() {
       _isHidden = !_isHidden;
-          });
+    });
   }
   showAlertDialog(BuildContext context , String title) {
     // set up the button
@@ -52,7 +58,7 @@ class _LoginState extends State<Login> {
     );
   }
   // this function to login with the correct UserName and Password by API
-  void LogIn() async {
+  Future LogIn() async {
 
     const url = "https://storeak-identity-service-beta.azurewebsites.net/api/v1/token";
     var body = jsonEncode({ //jsonEncode encodes a given value to a string using JSON syntax
@@ -62,18 +68,21 @@ class _LoginState extends State<Login> {
       "Language" : '${_locale.toString().substring(0,2)}',// to set language phone and sub into tow char ex:en, ar
       "GMT" : "$dateGMT" , ///////// To set the time at which a user is registered
       "IsFromNotification" : "false"  // to set notification true or false if user open app on notification or no
-          });
-    http.post(url,
+    });
+   await http.post(url,
         headers: {"Content-Type": "application/json"},
         body: body).then((http.Response response){
-      var data = jsonDecode(response.body);  // To store data that comes from JSON
-      if (response.statusCode != 200){
+     data = jsonDecode(response.body);  // To store data that comes from JSON
+
+     if (response.statusCode != 200){
         showAlertDialog(context,data['message']); // If the username or password is incorrect, a AlertDialog appears
       }
     });
+
+
   }
   // this function to login without UserName and Password by API
-  void LogInAnonymous() async {
+  Future LogInAnonymous() async {
     const url = "https://storeak-identity-service-beta.azurewebsites.net/api/v1/token";
     var body = jsonEncode({
       "clientId"	  : "14a20059-8baf-4b91-80e7-946cb6ea12fe",
@@ -82,14 +91,16 @@ class _LoginState extends State<Login> {
       "Language" : '${_locale.toString().substring(0,2)}',
       "GMT" : "$dateGMT" ,
       "IsFromNotification" : "false"
-          });
-    http.post(url,
+    });
+
+   await http.post(url,
         headers: {"Content-Type": "application/json"},
         body: body).then((http.Response response){
+
       if (response.statusCode == 200){
-        var data = jsonDecode(response.body);
-        Accesss_Token = data['access_token'].toString();
-        Token_type = data['token_type'].toString();
+        data1 = jsonDecode(response.body);
+        Accesss_Token = data1['access_token'].toString();
+        Token_type = data1['token_type'].toString();
         Token_type_ = Token_type.substring(0,1).toUpperCase()+ Token_type.substring(1,Token_type.length);
         Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => StoreInfo( Accesss_Token :Accesss_Token , Token_type :Token_type_)));
       }else{
@@ -99,9 +110,10 @@ class _LoginState extends State<Login> {
   }
   @override
   Widget build(BuildContext context) {
+
     _locale = Localizations.localeOf(context); // to ini _locale
     dateGMT = dateTime.format(DateTime.now().toUtc()); // to ini dateGMT
-    return Scaffold(
+    return loading?Center(child:CircularProgressIndicator()):Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(title: Text("Login"),),
       body: SingleChildScrollView(
@@ -129,23 +141,44 @@ class _LoginState extends State<Login> {
                       _validate_pass = false;
                       _validate_pass_len = false;
                       _validate_name_len = false;
-                    LogIn();
                     }
                   });
+                  setState(() {
+                    loading = true;
+                    print("2");
+                  });
+                  LogIn().whenComplete((){
+                    setState(() {
+                      loading = false;
+
+                    });
+                  });
                 },
-              ),   // login button
+              ), // login button
+
+
+
               CustomeButtone(
                 text: "Log In Anonymous",
                 callback: () {
-                  setState(() { LogInAnonymous();
+                  setState(() {
+                    loading = true;
                   });
+                  setState(() { LogInAnonymous().whenComplete(() {
+                    setState(() {
+                      loading = false;
+
+                    });
+                  });
+                  });
+
                 },
               ),  // login Anonymous button
             ],
           ),
         ),
       ),
-    );
+    ) ;
   }
   // this widget to build TextField
   Widget buildTextField(String hintText ,TextEditingController controller){
@@ -178,8 +211,16 @@ class _LoginState extends State<Login> {
       obscureText: hintText == "Password" ? _isHidden : false,
     );
   }
-
-
+  buildShowDialog(BuildContext context) {
+    return showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return Center(
+            child: CircularProgressIndicator(),
+          );
+        });
+  }
 }
 // this class to build CustomeButtone
 class CustomeButtone extends StatelessWidget {
@@ -190,13 +231,14 @@ class CustomeButtone extends StatelessWidget {
   // TODO: implement key
   @override
   Widget build(BuildContext context) {
+    bool isLoading = false;
     return Container(
       padding: const EdgeInsets.fromLTRB(20,7,20,7),
       child: Material(
         color: Colors.deepOrange[900],
         elevation: 6,
         borderRadius: BorderRadius.circular(30),
-        child: MaterialButton(
+        child:  MaterialButton(
           onPressed: callback,
           minWidth: (MediaQuery.of(context).size.width),
           height: 45,
@@ -205,4 +247,5 @@ class CustomeButtone extends StatelessWidget {
       ),
     );
   }
+
 }

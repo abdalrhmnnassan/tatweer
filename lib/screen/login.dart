@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:intl/intl.dart';
+import 'package:t/services/services_login.dart';
 
 import 'store_info.dart';
 class Login extends StatefulWidget {
@@ -14,32 +15,40 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   TextEditingController username = new TextEditingController();
   TextEditingController password = new TextEditingController();
+
 //////////////////////////////////////////////
-  bool _validate_pass = false;///////////////
-  bool _validate_pass_len = false;//////////
-  bool _validate_name_len = false;///////// this parameter bool to validate UserName and Password
-  bool _validate_user = false;////////////
+  bool _validate_pass = false; ///////////////
+  bool _validate_pass_len = false; //////////
+  bool _validate_name_len = false; ///////// this parameter bool to validate UserName and Password
+  bool _validate_user = false; ////////////
   ///////////////////////////////////////
-  bool _isHidden = true;////////////////   this parameter boo to chick into icon button if checked or no
-  Locale _locale;//////////////////////    this parameter to get Local Location
-  String Accesss_Token = null;////////     this parameter String to store AccessToken
-  String Token_type= null;///////////      this parameter String to store TokenType
-  String Token_type_= null;/////////       this parameter String to store TokenType after convert first char into toUpperCase and To combine it with the rest of String
-  var dateTime = DateFormat('+h');//       this parameter to set DateFormat into +h
-  var dateGMT = null;//////////////        this parameter to store dateGMT
-  var data1;
-  var data;
+  bool _isHidden = true; ////////////////   this parameter boo to chick into icon button if checked or no
+  Locale _locale; //////////////////////    this parameter to get Local Location
+  String Accesss_Token = null; ////////     this parameter String to store AccessToken
+  String Token_type = null; ///////////      this parameter String to store TokenType
+  String Token_type_ = null; /////////       this parameter String to store TokenType after convert first char into toUpperCase and To combine it with the rest of String
+  var dateTime = DateFormat(
+      '+h'); //       this parameter to set DateFormat into +h
+  var dateGMT = null; //////////////        this parameter to store dateGMT
+  // Note: This is a GlobalKey<FormState>,
+  // not a GlobalKey<MyCustomFormState>.
+  final _formKey = GlobalKey<FormState>();
+
   bool loading = false;
-  void _toggleVisibility(){
+
+  void _toggleVisibility() {
     setState(() {
       _isHidden = !_isHidden;
     });
   }
-  showAlertDialog(BuildContext context , String title) {
+
+  showAlertDialog(BuildContext context, String title) {
     // set up the button
     Widget okButton = FlatButton(
       child: Text("OK"),
-      onPressed: () { Navigator.pop(context); },
+      onPressed: () {
+        Navigator.pop(context);
+      },
     );
     // set up the AlertDialog
     AlertDialog alert = AlertDialog(
@@ -57,170 +66,165 @@ class _LoginState extends State<Login> {
       },
     );
   }
-  // this function to login with the correct UserName and Password by API
-  Future LogIn() async {
 
-    const url = "https://storeak-identity-service-beta.azurewebsites.net/api/v1/token";
-    var body = jsonEncode({ //jsonEncode encodes a given value to a string using JSON syntax
-      "Username"	  : "$username", // To set the UserName after fetching it from the interface
-      "Password": "$password",/////// To set the Password after fetching it from the interface
-      "PlayerId" : "" ,
-      "Language" : '${_locale.toString().substring(0,2)}',// to set language phone and sub into tow char ex:en, ar
-      "GMT" : "$dateGMT" , ///////// To set the time at which a user is registered
-      "IsFromNotification" : "false"  // to set notification true or false if user open app on notification or no
-    });
-   await http.post(url,
-        headers: {"Content-Type": "application/json"},
-        body: body).then((http.Response response){
-     data = jsonDecode(response.body);  // To store data that comes from JSON
-
-     if (response.statusCode != 200){
-        showAlertDialog(context,data['message']); // If the username or password is incorrect, a AlertDialog appears
-      }
-    });
-
-
-  }
-  // this function to login without UserName and Password by API
-  Future LogInAnonymous() async {
-    const url = "https://storeak-identity-service-beta.azurewebsites.net/api/v1/token";
-    var body = jsonEncode({
-      "clientId"	  : "14a20059-8baf-4b91-80e7-946cb6ea12fe",
-      "clientSecret": "ddlfg543lk66nmxsmdcfvKLMdsxfg456Mkd",
-      "PlayerId" : "" ,
-      "Language" : '${_locale.toString().substring(0,2)}',
-      "GMT" : "$dateGMT" ,
-      "IsFromNotification" : "false"
-    });
-
-   await http.post(url,
-        headers: {"Content-Type": "application/json"},
-        body: body).then((http.Response response){
-
-      if (response.statusCode == 200){
-        data1 = jsonDecode(response.body);
-        Accesss_Token = data1['access_token'].toString();
-        Token_type = data1['token_type'].toString();
-        Token_type_ = Token_type.substring(0,1).toUpperCase()+ Token_type.substring(1,Token_type.length);
-        Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => StoreInfo( Accesss_Token :Accesss_Token , Token_type :Token_type_)));
-      }else{
-        print(response.statusCode);
-      }
-    });
-  }
   @override
   Widget build(BuildContext context) {
-
     _locale = Localizations.localeOf(context); // to ini _locale
     dateGMT = dateTime.format(DateTime.now().toUtc()); // to ini dateGMT
-    return loading?Center(child:CircularProgressIndicator()):Scaffold(
+    return loading ? Center(child: CircularProgressIndicator()) : Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(title: Text("Login"),),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(18.0),
-          child: Column(
-            children: [
-              buildTextField("UserName" , username),
-              SizedBox(height: 10,),
-              buildTextField("Password" , password),
-              CustomeButtone(
-                text: "Log In",
-                callback: () {
-                  setState(() {
-                    if (username.text.isEmpty ==true){
-                      _validate_user = true;
-                    } else if(password.text.isEmpty ==true){
-                      _validate_pass = true;
-                    }else if(password.text.length<3){
-                      _validate_pass_len = true;
-                    }else if(username.text.length<3){
-                      _validate_name_len = true;
-                    } else{
-                      _validate_user = false;
-                      _validate_pass = false;
-                      _validate_pass_len = false;
-                      _validate_name_len = false;
+      body: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(18.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextFormField(
+                  textAlign: TextAlign.center,
+                  controller: username,
+                  validator: (value) {
+                    if (value.isEmpty) {
+                      return 'Please enter userName';
                     }
-                  });
-                  setState(() {
-                    loading = true;
-                    print("2");
-                  });
-                  LogIn().whenComplete((){
-                    setState(() {
-                      loading = false;
+                    if (value.length < 3) {
+                      return 'userName less than 3 chars ';
+                    }
+                    return null;
+                  },
+                  decoration: InputDecoration(
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                          color: Colors.redAccent, width: 2.0),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                          color: Colors.deepOrange[900], width: 2.0),
+                    ),
+                    labelText: "UserName",
+                    labelStyle: TextStyle(
+                        color: Colors.blueGrey
+                    ),
+                    hintStyle: TextStyle(
+                      color: Colors.grey,
+                      fontSize: 16.0,
+                    ),
+                  ),
 
-                    });
-                  });
-                },
-              ), // login button
+                ),
+                SizedBox(height: 5,),
+                TextFormField(
+                  textAlign: TextAlign.center,
+                  controller: password,
+                  validator: (value) {
+                    if (value.isEmpty) {
+                      return 'Please enter password';
+                    }
+                    if (value.length < 3) {
+                      return 'password less than 3 chars';
+                    }
+                    return null;
+                  },
+                  decoration: InputDecoration(
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                          color: Colors.redAccent, width: 2.0),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                          color: Colors.deepOrange[900], width: 2.0),
+                    ),
+                    labelText: "Password",
+                    labelStyle: TextStyle(
+                        color: Colors.blueGrey
+                    ),
+                    hintStyle: TextStyle(
+                      color: Colors.grey,
+                      fontSize: 16.0,
+                    ),
+                    suffixIcon: IconButton(
+                      onPressed: _toggleVisibility,
+                      icon: _isHidden ? Icon(
+                        Icons.visibility_off, color: Colors.blueGrey,) : Icon(
+                        Icons.visibility, color: Colors.blueGrey,),
+                    ),
+                  ),
+                  obscureText: _isHidden,
+                ),
+                SizedBox(height: 5,),
+                Container(
+                  padding: const EdgeInsets.fromLTRB(20,7,20,7),
+                  child: Material(
+                    color: Colors.deepOrange[900],
+                    elevation: 6,
+                    borderRadius: BorderRadius.circular(30),
+                    child: MaterialButton(
+                      onPressed: () {
+                        // Validate returns true if the form is valid, or false
+                        // otherwise.
+                        if (_formKey.currentState.validate()) {
+                          // If the form is valid
+                          setState(() {
+                            loading = true;
+                          });
+                          LogIn(username.toString(), password.toString(),
+                              _locale.toString(), dateGMT).then((value) =>  showAlertDialog(context,value['message'])).whenComplete(() {
+                            setState(() {
+                              loading = false;
+                            });
+                          });
+                        }
+                      },
+                      minWidth: (MediaQuery.of(context).size.width),
+                      height: 45,
+                      child: Text("LogIn" , style: TextStyle(color: Colors.white),),
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.fromLTRB(20,7,20,7),
+                  child: Material(
+                    color: Colors.deepOrange[900],
+                    elevation: 6,
+                    borderRadius: BorderRadius.circular(30),
+                    child: MaterialButton(
+                      onPressed: () {
+                        setState(() {
+                          loading = true;
+                        });
+                        setState(() {
+                          LogInAnonymous(_locale.toString(), dateGMT).then((value) {
+                            Accesss_Token = value['access_token'].toString();
+                            Token_type = value['token_type'].toString();
+                            Token_type_ = Token_type.substring(0,1).toUpperCase()+ Token_type.substring(1,Token_type.length);
+                            Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => StoreInfo( Accesss_Token :Accesss_Token , Token_type :Token_type_)));
+                          }).whenComplete(() {
+                            setState(() {
+                              loading = false;
+                            });
+                          });
+                        });
+                      },
+                      minWidth: (MediaQuery.of(context).size.width),
+                      height: 45,
+                      child: Text("LogIn Anonymous" , style: TextStyle(color: Colors.white),),
+
+                    ),
+                  ),
+                ),
 
 
-
-              CustomeButtone(
-                text: "Log In Anonymous",
-                callback: () {
-                  setState(() {
-                    loading = true;
-                  });
-                  setState(() { LogInAnonymous().whenComplete(() {
-                    setState(() {
-                      loading = false;
-
-                    });
-                  });
-                  });
-
-                },
-              ),  // login Anonymous button
-            ],
+              ],
+            ),
           ),
         ),
       ),
-    ) ;
-  }
-  // this widget to build TextField
-  Widget buildTextField(String hintText ,TextEditingController controller){
-    return TextField(
-      textAlign: TextAlign.center,
-      controller: controller,
-      decoration: InputDecoration(
-        focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.redAccent, width: 2.0),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.deepOrange[900], width: 2.0),
-        ),
-        labelText: hintText,
-        labelStyle: TextStyle(
-            color: Colors.blueGrey
-        ),
-        hintStyle: TextStyle(
-
-          color: Colors.grey,
-          fontSize: 16.0,
-
-        ),
-        suffixIcon: hintText == "Password" ? IconButton(
-          onPressed: _toggleVisibility,
-          icon: _isHidden ? Icon(Icons.visibility_off , color: Colors.blueGrey,) : Icon(Icons.visibility ,color: Colors.blueGrey,),
-        ) : null,
-        errorText: _validate_pass && hintText == "Password" ? 'Value Can\'t Be Empty' : _validate_pass_len && hintText == "Password" ? "password less than 3 chars " : _validate_user ? 'Value Can\'t Be Empty' : _validate_name_len ? "password less than 3 chars " : null,
-      ),
-      obscureText: hintText == "Password" ? _isHidden : false,
     );
   }
-  buildShowDialog(BuildContext context) {
-    return showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return Center(
-            child: CircularProgressIndicator(),
-          );
-        });
-  }
+
+
 }
 // this class to build CustomeButtone
 class CustomeButtone extends StatelessWidget {

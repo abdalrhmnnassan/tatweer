@@ -2,7 +2,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:t/screen/location.dart';
-import 'package:t/services/get_store_info.dart';
+import 'package:t/services/services_get_store_info.dart';
 import '../model/Store_Info.dart';
 
 
@@ -43,7 +43,7 @@ class _StoreInfoState extends State<StoreInfo> {
                   color: Colors.white,
                 ),
                 onPressed: () {
-                  Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => Location_( Accesss_Token :widget.Accesss_Token , Token_type :widget.Accesss_Token)));
+                  Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => Location_( Accesss_Token :widget.Accesss_Token , Token_type :widget.Token_type)));
 
                 },
               )
@@ -95,8 +95,15 @@ class _StoreInfoState extends State<StoreInfo> {
           children: [
             Expanded(child: CachedNetworkImage(
               imageUrl: store.mainStore.picturePath,
-              progressIndicatorBuilder: (context, url, downloadProgress) =>
-                  CircularProgressIndicator( value: downloadProgress.progress , backgroundColor:  Colors.deepOrange[900],),
+             placeholder: (context , url)=> Center(
+               child: SizedBox(
+                 width: 50,
+                 height: 50,
+                 child: new CircularProgressIndicator(),
+               ),
+             ),
+             // progressIndicatorBuilder: (context, url, downloadProgress) =>
+              //    LinearProgressIndicator( value: downloadProgress.progress , backgroundColor:  Colors.deepOrange[900],),
               errorWidget: (context, url, error) => Icon(Icons.error),
             ),),
             Text(store.mainStore.description.toString()),
@@ -106,15 +113,6 @@ class _StoreInfoState extends State<StoreInfo> {
         ),
       ),
     );
-
-
-    /* return ListTile(
-      leading: CircleAvatar(backgroundImage: NetworkImage(store.mainStore.picturePath),),
-      title: Text(store.mainStore.name),
-      subtitle: Text(store.mainStore.description.toString()),
-      trailing: Text(store.mainStore.freeNumber.toString()),
-    );*/
-
   }
 
   Other_Stores_Tab(Store_Info store) {
@@ -130,8 +128,13 @@ class _StoreInfoState extends State<StoreInfo> {
               children: [
                 Expanded(child: CachedNetworkImage(
                   imageUrl: store.countriesBranches[0].citiesBranches[0].branches[index].picturePath,
-                  progressIndicatorBuilder: (context, url, downloadProgress) =>
-                      CircularProgressIndicator(value: downloadProgress.progress ,  backgroundColor:  Colors.deepOrange[900],),
+                  placeholder: (context , url)=> Center(
+                    child: SizedBox(
+                      width: 50,
+                      height: 50,
+                      child: new CircularProgressIndicator(),
+                    ),
+                  ),
                   errorWidget: (context, url, error) => Icon(Icons.error),
                 ),),
                 Container(
@@ -147,17 +150,5 @@ class _StoreInfoState extends State<StoreInfo> {
         );
       },
     );
-
-    /*  return ListView.builder(
-      itemBuilder: (_,index){
-        return ListTile(
-          leading: CircleAvatar(backgroundImage: NetworkImage(store.countriesBranches[0].citiesBranches[0].branches[index].picturePath),),
-          title: Text(store.countriesBranches[0].citiesBranches[0].branches[index].name),
-          subtitle: Text(store.countriesBranches[0].citiesBranches[0].branches[index].description.toString()),
-          trailing: Text(store.countriesBranches[0].citiesBranches[0].branches[index].freeNumber.toString()),
-        );
-      },
-      itemCount:store.countriesBranches[0].citiesBranches[0].branches.length,
-    );*/
   }
 }

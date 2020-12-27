@@ -99,7 +99,7 @@ class _StoreInfoState extends State<StoreInfo> {
                child: SizedBox(
                  width: 50,
                  height: 50,
-                 child: new CircularProgressIndicator(),
+                 child:  CircularProgressIndicator(),
                ),
              ),
              // progressIndicatorBuilder: (context, url, downloadProgress) =>
@@ -132,7 +132,7 @@ class _StoreInfoState extends State<StoreInfo> {
                     child: SizedBox(
                       width: 50,
                       height: 50,
-                      child: new CircularProgressIndicator(),
+                      child:  CircularProgressIndicator(),
                     ),
                   ),
                   errorWidget: (context, url, error) => Icon(Icons.error),

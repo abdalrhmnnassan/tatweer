@@ -223,33 +223,4 @@ class _LoginState extends State<Login> {
       ),
     );
   }
-
-
-}
-// this class to build CustomeButtone
-class CustomeButtone extends StatelessWidget {
-  final VoidCallback callback;
-  final String text;
-
-  const CustomeButtone({ Key key,this.callback, this.text}):super (key: key);
-  // TODO: implement key
-  @override
-  Widget build(BuildContext context) {
-    bool isLoading = false;
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20,7,20,7),
-      child: Material(
-        color: Colors.deepOrange[900],
-        elevation: 6,
-        borderRadius: BorderRadius.circular(30),
-        child:  MaterialButton(
-          onPressed: callback,
-          minWidth: (MediaQuery.of(context).size.width),
-          height: 45,
-          child: Text(text , style: TextStyle(color: Colors.white),),
-        ),
-      ),
-    );
-  }
-
 }

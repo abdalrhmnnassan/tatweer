@@ -27,7 +27,7 @@ class _Location_State extends State<Location_> {
   }
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
+    return  Scaffold(
       appBar: AppBar(
         title: Text("Location"),
       ),
@@ -53,11 +53,11 @@ class _Location_State extends State<Location_> {
 
                           children: [
                             Expanded(
-                              child: new DropdownButton(
+                              child:  DropdownButton(
                                 hint: Text("Country"),
                                 items: data.map((item) {// this map that contain data from api to show Country
-                                  return new DropdownMenuItem(
-                                    child: new Text(item['name'].toString()), // this name that come back from list method of json
+                                  return  DropdownMenuItem(
+                                    child:  Text(item['name'].toString()), // this name that come back from list method of json
                                     value: item['id'].toString(),// this ID that come back from list method of json
                                   );
                                 }).toList(),

@@ -1,25 +1,22 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:t/services/services_get_location.dart';
 
-class Location_ extends StatefulWidget {
+class location_ extends StatefulWidget {
   @override
-  _Location_State createState() => _Location_State();
-  // This Accesss_Token and Token_type contain the data coming from API and store the access token and token type from http.post
-  String Accesss_Token ;
-  String Token_type ;
-  Location_({this.Accesss_Token, this.Token_type});
+  _location_State createState() => _location_State();
+  // This accessToken and tokenType contain the data coming from API and store the access token and token type from http.post
+  String accessToken ;
+  String tokenType ;
+  location_({this.accessToken, this.tokenType});
 }
-class _Location_State extends State<Location_> {
-  String Id_Select_Country;// to store Id after Select Country
-  String Id_Select_City;// to store Id after Select City
-  String Id_Select_District;// to store Id after Select District
+class _location_State extends State<location_> {
+  String idSelectCountry;// to store Id after Select Country
+  String idSelectCity;// to store Id after Select City
+  String idSelectDistrict;// to store Id after Select District
 
   final String url = "https://storeak-gps-service-beta.azurewebsites.net/api/v1/Locations";
-  List citys = new List(); // this list to store data city after select Country
-  List District = new List();// this list to store data District after select city
+  List cites = new List(); // this list to store data city after select Country
+  List district = new List();// this list to store data District after select city
   List data = List(); // this list to store all data from api
   @override
   void initState() { // this ini to Initialize data from api
@@ -32,7 +29,7 @@ class _Location_State extends State<Location_> {
         title: Text("Location"),
       ),
       body:FutureBuilder(
-        future: getLocation(url ,widget.Token_type , widget.Accesss_Token ),
+        future: getLocation(url ,widget.tokenType , widget.accessToken ),
         builder: (context ,snapshot){
           if(!snapshot.hasData){
             return Center(child: CircularProgressIndicator(),);
@@ -70,10 +67,10 @@ class _Location_State extends State<Location_> {
                             * No data retrieval required.
                             * */
                                     if (newVal.length==0){
-                                      Id_Select_Country = newVal;
+                                      idSelectCountry = newVal;
                                       for (int i=0;i<data.length;i++){
-                                        if (data[i]['id'].toString()==Id_Select_Country.toString()){
-                                          citys=data[i]['children'];
+                                        if (data[i]['id'].toString()==idSelectCountry.toString()){
+                                          cites=data[i]['children'];
                                           break;
                                         }
                                       }
@@ -85,14 +82,17 @@ class _Location_State extends State<Location_> {
                               * but if it is other then that means that the values for the city and
                               * District should be empty if it was specified earlier and the city data must be re-fetched
                               * */
-                                      if (Id_Select_Country!=newVal){
-                                        Id_Select_Country = newVal;
-                                        Id_Select_City = null;
-                                        Id_Select_District = null;
+                                      if (idSelectCountry!=newVal){
+                                        idSelectCountry = newVal;
+                                        idSelectCity = null;
+                                        idSelectDistrict = null;
+                                        if (district.isNotEmpty){
+                                          district.clear();
+                                        }
                                         // print(_mySelection.toString());
                                         for (int i=0;i<data.length;i++){
-                                          if (data[i]['id'].toString()==Id_Select_Country.toString()){
-                                            citys=data[i]['children'];
+                                          if (data[i]['id'].toString()==idSelectCountry.toString()){
+                                            cites=data[i]['children'];
                                             break;
                                           }
                                         }
@@ -104,11 +104,11 @@ class _Location_State extends State<Location_> {
                                     //print(data1[1]['children'][0]['name']);
                                   });
                                 },
-                                value: Id_Select_Country,
+                                value: idSelectCountry,
                               ),
                             ),
 
-                            citys.isEmpty?Expanded(
+                            cites.isEmpty?Expanded(
                               child: DropdownButton(
                                 //To select a city and it displays a city if the country is not selected
                                   hint: Text("City")
@@ -117,7 +117,7 @@ class _Location_State extends State<Location_> {
                                 :new Expanded(child:DropdownButton(
 
                               hint: Text("City"),
-                              items: citys.map((item) {
+                              items: cites.map((item) {
                                 return new DropdownMenuItem(
                                   child: new Text(item['name'].toString()),
                                   value: item['id'].toString(),
@@ -132,10 +132,10 @@ class _Location_State extends State<Location_> {
                               * No data retrieval required.
                               * */
                                   if(newVal.length==0){
-                                    Id_Select_City = newVal;
-                                    for (int i=0;i<citys.length;i++){
-                                      if (citys[i]['id'].toString()==Id_Select_City.toString()){
-                                        District=citys[i]['children'];
+                                    idSelectCity = newVal;
+                                    for (int i=0;i<cites.length;i++){
+                                      if (cites[i]['id'].toString()==idSelectCity.toString()){
+                                        district=cites[i]['children'];
                                         break;
                                       }
                                     }
@@ -145,12 +145,13 @@ class _Location_State extends State<Location_> {
                               * If she's the same here, she'd do nothing,
                               * But if not then this means that the region values should be blank if previously specified and data must be fetched
                               * */
-                                    if (Id_Select_City!=newVal){
-                                      Id_Select_City = newVal;
-                                      Id_Select_District = null;
-                                      for (int i=0;i<citys.length;i++){
-                                        if (citys[i]['id'].toString()==Id_Select_City.toString()){
-                                          District=citys[i]['children'];
+                                    if (idSelectCity!=newVal){
+                                      idSelectCity = newVal;
+                                      idSelectDistrict = null;
+
+                                      for (int i=0;i<cites.length;i++){
+                                        if (cites[i]['id'].toString()==idSelectCity.toString()){
+                                          district=cites[i]['children'];
                                           break;
                                         }
                                       }
@@ -159,10 +160,10 @@ class _Location_State extends State<Location_> {
 
                                 });
                               },
-                              value: Id_Select_City,
+                              value: idSelectCity,
                             )),
 
-                            District.isEmpty?Expanded (
+                            district.isEmpty?Expanded (
                               child: DropdownButton(
                                 //To Selects the District and displays a city if the city is not selected
                                   hint: Text("District")
@@ -170,7 +171,7 @@ class _Location_State extends State<Location_> {
                             )
                                 : Expanded(child:DropdownButton(
                               hint: Text("District"),
-                              items: District.map((item) {
+                              items: district.map((item) {
                                 return new DropdownMenuItem(
                                   child: new Text(item['name'].toString() ,),
                                   value: item['id'].toString(),
@@ -178,13 +179,13 @@ class _Location_State extends State<Location_> {
                               }).toList(),
                               onChanged: (newVal) {
                                 setState(() {
-                                  Id_Select_District = newVal;
+                                  idSelectDistrict = newVal;
                                 /*  print(Id_Select_Country.toString());
                                   print(Id_Select_City.toString());
                                   print(Id_Select_District.toString());*/
                                 });
                               },
-                              value: Id_Select_District,
+                              value: idSelectDistrict,
                             )),
                           ],
                         ),

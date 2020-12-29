@@ -8,10 +8,10 @@ import '../model/Store_Info.dart';
 
 class StoreInfo extends StatefulWidget {
 
-  // This Accesss_Token and Token_type contain the data coming from API and store the access token and token type from http.post
-  String Accesss_Token  = "";
-  String Token_type  = "";
-  StoreInfo({this.Accesss_Token, this.Token_type});
+  // This accessToken and tokenType contain the data coming from API and store the access token and token type from http.post
+  String accessToken  = "";
+  String tokenType  = "";
+  StoreInfo({this.accessToken, this.tokenType});
   @override
   _StoreInfoState createState() => _StoreInfoState();
 }
@@ -43,7 +43,7 @@ class _StoreInfoState extends State<StoreInfo> {
                   color: Colors.white,
                 ),
                 onPressed: () {
-                  Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => Location_( Accesss_Token :widget.Accesss_Token , Token_type :widget.Token_type)));
+                  Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => location_( accessToken :widget.accessToken , tokenType :widget.tokenType)));
 
                 },
               )
@@ -64,7 +64,7 @@ class _StoreInfoState extends State<StoreInfo> {
           ),
           body: FutureBuilder(
             // this method come back from getStoreInfo file in the services package,
-              future: getStoreInfo(url, widget.Token_type, widget.Accesss_Token ),
+              future: getStoreInfo(url, widget.tokenType, widget.accessToken ),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
                   return Center(child:  CircularProgressIndicator(backgroundColor:  Colors.red,),);
@@ -74,9 +74,10 @@ class _StoreInfoState extends State<StoreInfo> {
                 return TabBarView(
                   children: [
                     // this function to build Main store body
-                    Main_Store_Tab(store),
+                    mainStoreTab(store),
+
                     // this function to build branches stores body
-                    Other_Stores_Tab(store),
+                    otherStoresTab(store),
                   ],
                 );
               }),
@@ -88,7 +89,7 @@ class _StoreInfoState extends State<StoreInfo> {
 
 
 
-  Main_Store_Tab(Store_Info store) {
+  mainStoreTab(Store_Info store) {
     return Container(
       child: Card(
         child: Column(
@@ -115,40 +116,36 @@ class _StoreInfoState extends State<StoreInfo> {
     );
   }
 
-  Other_Stores_Tab(Store_Info store) {
-    final orientation = MediaQuery.of(context).orientation;
-    return   GridView.builder(
-      itemCount: store.countriesBranches[0].citiesBranches[0].branches.length,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: (orientation == Orientation.portrait) ? 2 : 3),
-      itemBuilder: (BuildContext context, int index) {
-        return Container(
-          child: new Card(
-            child: Column(
-              children: [
-                Expanded(child: CachedNetworkImage(
-                  imageUrl: store.countriesBranches[0].citiesBranches[0].branches[index].picturePath,
-                  placeholder: (context , url)=> Center(
-                    child: SizedBox(
-                      width: 50,
-                      height: 50,
-                      child:  CircularProgressIndicator(),
-                    ),
-                  ),
-                  errorWidget: (context, url, error) => Icon(Icons.error),
-                ),),
-                Container(
-                  child:Text(store.countriesBranches[0].citiesBranches[0].branches[index].name,style: TextStyle(fontSize: 20),) ,
-                ),  Container(
-                  child:Text(store.countriesBranches[0].citiesBranches[0].branches[index].description.toString(),style: TextStyle(fontSize: 15),) ,
-                ),  Container(
-                  child:Text(store.countriesBranches[0].citiesBranches[0].branches[index].freeNumber.toString(),style: TextStyle(fontSize: 15),) ,
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
+  otherStoresTab(Store_Info store){
+     return ListView(
+     children: [
+       for(var i=0; i<store.countriesBranches.length;i++)
+       for(var y=0; y<store.countriesBranches[i].citiesBranches.length;y++)
+       for(var x=0; x<store.countriesBranches[i].citiesBranches[y].branches.length;x++)
+         Container(
+           child: new Card(
+             child: Column(
+               children: [
+                 CachedNetworkImage(
+                   imageUrl: store.countriesBranches[i].citiesBranches[y].branches[x].picturePath,
+                   placeholder: (context , url)=> Center(
+                     child: CircularProgressIndicator(),
+                   ),
+                   errorWidget: (context, url, error) => Icon(Icons.error),
+                 ),
+                 Container(
+                   child:Text(store.countriesBranches[i].citiesBranches[y].branches[x].name,style: TextStyle(fontSize: 20),) ,
+                 ),  Container(
+                   child:Text(store.countriesBranches[i].citiesBranches[y].branches[x].description.toString(),style: TextStyle(fontSize: 15),) ,
+                 ),  Container(
+                   child:Text(store.countriesBranches[i].citiesBranches[y].branches[x].freeNumber.toString(),style: TextStyle(fontSize: 15),) ,
+                 ),
+               ],
+             ),
+           ),
+         )
+     ],
+     );
   }
+
 }
